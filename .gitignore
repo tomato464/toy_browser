@@ -1,4 +1,6 @@
 *.o
+*.txt
 *.swp
+ping
 server
 client

@@ -11,3 +11,5 @@ then come up with
 ]
 
 I plan to make it from scratch as possible as I can, from linux syscall.
+
+Gnu/Linux Ubuntu-20.04.2
