@@ -1,6 +1,4 @@
 *.o
 *.txt
 *.swp
-ping
-server
-client
+*.bin
