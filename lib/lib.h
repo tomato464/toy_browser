@@ -9,6 +9,10 @@
 #include<stdlib.h>
 #include<string.h>
 
+typedef uint8_t bool;
+#define true 1
+#define false 0
+
 typedef uint32_t in_addr_t;
 
 uint8_t StrToByte(const char *s, const char **next);

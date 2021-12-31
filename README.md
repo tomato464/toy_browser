@@ -4,11 +4,12 @@ our goal:
 (one terminal)./server
 (another teminal)./client(browser)
 then come up with
-[--Hello world--
+
+	[--Hello world--
 
 	sample html sentence
 
-]
+	]
 
 I plan to make it from scratch as possible as I can, from linux syscall.
 

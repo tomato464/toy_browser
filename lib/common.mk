@@ -8,6 +8,9 @@ all : $(TARGET)
 $(TARGET) : $(OBJS) Makefile $(LIB_DEPS)
 	$(CC) $(OBJS) -o $(TARGET) $(CFLAGS)
 
+run : $(TARGET)
+	./$(TARGET)
+
 clean : 
 	rm $(TARGET) $(OBJS)
 
