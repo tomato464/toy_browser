@@ -13,4 +13,7 @@ then come up with
 
 I plan to make it from scratch as possible as I can, from linux syscall.
 
-Gnu/Linux Ubuntu-20.04.2
+	5.11.0-43-generic Gnu/Linux Ubuntu-20.04.2
+
+gcc version
+	gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
