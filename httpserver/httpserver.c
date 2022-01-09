@@ -1,10 +1,9 @@
 #include"../lib/lib.h"
 #include<string.h>
 
-#define SIZE_BACKLOG 10
+#define SIZE_BACKLOG 3
 #define SIZE_REQUEST 1000
-#define SIZE_CONTENS 5000
-#define SIZE_RESPONSE 7000
+#define SIZE_RESPONSE 10000
 
 bool tcp;
 char *cmd_port;
@@ -36,42 +35,123 @@ bool ParseArgs(int argc, char *argv[])
 	return true;
 }
 
-void MakeResponse(char *response, int status, char *contents)
-//200 => ok | 500 => error
+void StatusLine(char *response, int status)
 {
 	switch(status){
-		case 200 :
-	
-			break;
+	case 200 ://succeed
+		strcpy(response, "HTTP/1.1 200 OK\n");
+		break;
 
-		case 500 :
+	case 404 :
+		strcpy(response, "HTTP1.1 404 Not Found\n");
+		break;
 
-			break;
-
-		default :
-			break;
+	default ://
+		strcpy(response, "HTTP/1.1 500 Internal Server Error\n");
+		break;
 	}
-	return;
+}
+
+void Headers(char *response)
+{
+	strcat(response, "Content-Type: text/html; charset=UTF-8\n");
+}
+
+void Crlf(char *response)
+{
+	strcat(response, "\n");
+}
+
+void Body(char *response, char *contents)
+{
+	strcat(response, contents);
+}
+
+void MakeResponse(char *response, int status, char *contents)
+//200 => ok | 500 => error
+// see contents of http response
+{
+	StatusLine(response, status);
+	Headers(response);
+	Crlf(response);
+	Body(response, contents);
 }
 
 void Route(char *response, char *path)
 {
-	char contens[SIZE_CONTENS];
-	if(!strcmp(path, "/") | !strcmp(path, "/index.html")){
+	if(!strcmp(path, "/") || !strcmp(path, "/index.html")){
+		//make contents
+		char *contents = 
+		"<html>\n"
+        "  <body>\n"
+        "    <h1>Hello World</h1>\n"
+        "    <div>\n"
+        "      <p>This is a sample paragraph.</p>\n"
+        "      <ul>\n"
+        "        <li>List 1</li>\n"
+        "        <li>List 2</li>\n"
+        "        <li>List 3</li>\n"
+        "      </ul>\n"
+        "    </div>\n"
+        "  </body>\n"
+        "</html>\n";
 
-		MakeResponse(response, 200, contens);
+		MakeResponse(response, 200, contents);
 		return;
 	}
 
 	if(!(strcmp(path, "/page1.html"))){
-		MakeResponse(response, 200, contens);
+		char *contents =
+	     "<html>\n"
+         "  <body>\n"
+         "    <h1>Example Page 1</h1>\n"
+         "    <div>\n"
+         "      <p>This is a sample paragraph.</p>\n"
+         "      <ul>\n"
+         "        <li>List 1</li>\n"
+         "        <li>List 2</li>\n"
+         "      </ul>\n"
+         "      <ul>\n"
+         "        <li>List 3</li>\n"
+         "        <li>List 4</li>\n"
+         "      </ul>\n"
+         "    </div>\n"
+         "  </body>\n"
+         "</html>\n";
+
+		MakeResponse(response, 200, contents);
 		return;
 	}
 
 	if(!strcmp(path, "/page2.html")){
-		MakeResponse(response, 200, contens);
+		char *contents =
+         "<html>\n"
+         "  <body>\n"
+         "    <h1>Example Page 2</h1>\n"
+         "    <div>\n"
+         "      <p>This is the first paragraph.</p>\n"
+         "    </div>\n"
+         "    <ul>\n"
+         "      <li>List 1</li>\n"
+         "      <li>List 2</li>\n"
+         "    </ul>\n"
+         "    <div>\n"
+         "      <p>This is the second paragraph.</p>\n"
+         "    </div>\n"
+         "  </body>\n"
+         "</html>\n";
+		MakeResponse(response, 200, contents);
 		return;
 	}
+
+	char *contents = 
+       "<html>\n"
+       "  <body>\n"
+       "    <h1>Error!</h1>\n"
+       "    <p>Page is not found.</p>\n"
+       " </body>\n"
+       "</html>\n";
+	MakeResponse(response, 404, contents);
 }
 
 void StartServer(void)
@@ -93,9 +173,10 @@ void StartServer(void)
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
+	socklen_t addrlen = sizeof(server_addr);
 
 	int n;
-	n = bind(soc, (struct sockaddr *) &server_addr, sizeof(server_addr));
+	n = bind(soc, (struct sockaddr *) &server_addr, addrlen);
 	if(n < 0){
 		printf("error at bind\n");
 		exit(1);
@@ -113,7 +194,6 @@ void StartServer(void)
 	//route path
 	//
 
-	socklen_t addrlen;
 	while(1){
 		//received request
 		char request[SIZE_REQUEST];
@@ -141,11 +221,11 @@ void StartServer(void)
 		}
 
 		printf("got request :\n");
-		printf("%s/n", request);
+		printf("%s\n", request);
 
 		//routing and make responce
 		char *method = strtok(request, " ");
-		char *path = strtok(request, " ");
+		char *path = strtok(NULL, " ");
 		char *response;
 		response = (char *) malloc(SIZE_RESPONSE);
 
@@ -154,13 +234,15 @@ void StartServer(void)
 		}else{
 			MakeResponse(response, 500, "only accepte GET method.");
 		}		
+
+		printf("resoponse :\n%s\n", response);
 		int response_size;
 		if(tcp){
-			response_size = sendto(accepted_soc, request, sizeof(request),
-				0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+			response_size = sendto(accepted_soc, response, strlen(response),
+				0, (struct sockaddr *)&server_addr, addrlen);
 		}else{
-			response_size = sendto(soc, request, sizeof(request),
-				0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+			response_size = sendto(soc, response, strlen(response),
+				0, (struct sockaddr *)&server_addr, addrlen);
 		}
 
 		if(response_size < 0){
@@ -172,6 +254,7 @@ void StartServer(void)
 		if(tcp){
 			close(accepted_soc);
 		}
+		printf("response\n");
 	}
 	close(soc);
 }

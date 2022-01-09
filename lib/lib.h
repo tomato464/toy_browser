@@ -21,7 +21,7 @@ void PrintIPaddr(in_addr_t ip_addr);
 
 in_addr_t GetIPaddrFromString(const char *s);
 
-unsigned short StrToNum16(const char *s, const char **next);
+uint16_t StrToNum16(const char *s, const char **next);
 
 void PrintNStr(const char *s, const int n);
 #endif
