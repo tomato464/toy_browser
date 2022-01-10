@@ -1,6 +1,6 @@
 NAME = browser
 
-TARGET_OBJS = $(NAME).o render.o
+TARGET_OBJS = $(NAME).o render.o tokenize.o parse.o
 
 TARGET = $(NAME).bin
 

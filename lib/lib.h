@@ -8,6 +8,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<stddef.h>
 
 typedef uint8_t bool;
 #define true 1

@@ -1,4 +1,5 @@
 #include"../lib/lib.h"
+#include"tokenize.h"
 #include"render.h"
 #include<string.h>
 #include<stdio.h>
@@ -23,6 +24,8 @@ bool tcp = false;
 
 struct ParseUrl parseurl;
 
+char *raw_text = NULL;
+
 int ParseArgs(int argc, char *argv[])
 //for test, we return status
 //-1 => error
@@ -40,16 +43,24 @@ int ParseArgs(int argc, char *argv[])
 			ret = 1;
 			continue;
 		}
-		if(!strncmp(argv[0], "--url", 5) || strncmp(argv[0], "-u", 2)){
+		if(!strncmp(argv[0], "--url", 5) || !strncmp(argv[0], "-u", 2)){
 			strcpy(parseurl.url, argv[1]);
 			argc -= 2;
 			argv += 2;
 			continue;	
 		}
-		if(!strncmp(argv[0], "--tcp", 5) || strncmp(argv[0], "-t", 2)){
+		if(!strncmp(argv[0], "--tcp", 5) || !strncmp(argv[0], "-t", 2)){
 			tcp = true;
 			argc -= 1;
 			argv += 1;
+			continue;	
+		}
+		if(!strncmp(argv[0], "--tokenize_test", 15)){
+			ret = 2;
+			raw_text = (char *) malloc(1000);
+			strcpy(raw_text, argv[1]);
+			argc -= 2;
+			argv += 2;
 			continue;	
 		}
 		return -1;
@@ -257,7 +268,13 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(n == 3){//test for tokenizing http
+	if(n == 2){//test for tokenizing http
+		if(!raw_text){
+			printf("for tokenized test you should put http text behind\n");
+			exit(1);
+		}
+		TestTokenize(raw_text);
+		free(raw_text);
 		return 0;
 	}
 
