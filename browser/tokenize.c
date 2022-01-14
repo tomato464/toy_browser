@@ -16,6 +16,11 @@ static Token *CreateToken(TokenType type)
 {
 	Token *new_token;
 	new_token = (Token *) malloc(sizeof(Token));
+	memset(new_token, 0, sizeof(Token));
+	if(type == StartTag || type == EndTag){
+		new_token->tag_name = (char *) malloc(20);
+		memset(new_token->tag_name, 0, 20);
+	}
 
 	new_token->type = type;
 	new_token->next = NULL;
@@ -28,11 +33,10 @@ static void AppendToken(Token *token)
 	if(!current_token){
 		//first time
 		first_token = token;
-		current_token = token;
 	}else{
 		current_token->next = token;
-		current_token = token;
 	}
+	current_token = token;
 }
 
 static Token *CreateChrToken(char data)
@@ -69,8 +73,7 @@ void Tokenize(char *html)
 					break;
 				}
 				Token *token = CreateToken(StartTag);
-				token->tag_name = malloc(10);
-				AppendToken(token);
+				AppendToken(token);//cuurent => this
 				mode = TagName;
 				break;
 			}
@@ -86,7 +89,6 @@ void Tokenize(char *html)
 			}
 			case EndTagOpen :{
 				Token *token = CreateToken(EndTag);
-				token->tag_name = malloc(10);
 				AppendToken(token);
 				mode = TagName;
 				break;

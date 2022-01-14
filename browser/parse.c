@@ -4,12 +4,16 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include"../lib/lib.h"
 
 Node *root = NULL;
 Node *current = NULL;
 
 Node *stack[100];
 int count = 0;
+
+static void PrintRecursive(Node *node, int depth);
+
 static int PushNode(Node *node)
 {
 	if(count >= 100){
@@ -89,10 +93,24 @@ static Node *CreateNodeChrFromToken(Token **token_pp)
 	return node;
 }
 
+static bool IsIgnore(Token *token)
+{
+	if(token->type == CHR &&
+		(token->data == 0x09 /*tab*/  ||
+		token->data == 0x0a /*LF*/||
+		token->data == 0x0c /*FF*/||
+		token->data == 0x0d /*CR*/||
+		token->data == 0x20 /*Space*/)){
+		return true;
+	}
+	return false;
+}
+
 void ConstructTree()
 {
 	NodeMode mode = INITIAL;
 	root = CreateNode(DOCUMENT);
+	root->element_type = NONE;
 	current = root;
 	Node *node = NULL;
 	Token *token = first_token;
@@ -107,6 +125,11 @@ void ConstructTree()
 		}
 	
 		case BEFORE_HTML :{
+			if(IsIgnore(token)){
+				token = token->next;
+				continue;
+			}
+
 			if(token->type == StartTag && !strcmp(token->tag_name, "html")){
 				node = CreateNodeElement(HTML, token);
 				InsertNode(node);
@@ -116,9 +139,24 @@ void ConstructTree()
 				mode = BEFORE_HEAD;
 				continue;
 			}
+
+			{//other
+				node = CreateNode(ELEMENT);
+				node->element_type = HTML;
+				InsertNode(node);
+				PushNode(current);
+				current = node;
+				mode = BEFORE_HEAD;
+				continue;
+			}
 		}
 	
 		case BEFORE_HEAD :{
+			if(IsIgnore(token)){
+				token = token->next;
+				continue;
+			}
+
 			if(token->type == StartTag && !strcmp(token->tag_name, "head")){
 				node = CreateNodeElement(HEAD, token);
 				InsertNode(node);
@@ -157,6 +195,10 @@ void ConstructTree()
 		}
 	
 		case AFTER_HEAD :{
+			if(IsIgnore(token)){
+				token = token->next;
+				continue;
+			}
 			if(token->type == StartTag && !strcmp(token->tag_name, "body")){
 				node = CreateNodeElement(BODY, token);
 				InsertNode(node);
@@ -175,7 +217,11 @@ void ConstructTree()
 				continue;
 			}
 	
-			if(token->type == StartTag && !strcmp(token->tag_name, "h1")){
+			if(token->type == StartTag && 
+				(!strcmp(token->tag_name, "h1") ||
+				!strcmp(token->tag_name, "h2") ||
+				!strcmp(token->tag_name, "h3") ||
+				!strcmp(token->tag_name, "h4"))){
 				node = CreateNodeElement(HEADING, token);
 				InsertNode(node);
 				PushNode(node);
@@ -183,7 +229,43 @@ void ConstructTree()
 				token = token->next;
 				continue;
 			}
-		
+
+			if(token->type == StartTag && !strcmp(token->tag_name, "div")){
+				node = CreateNodeElement(DIV, token);
+				InsertNode(node);
+				PushNode(node);
+				current = node;
+				token = token->next;
+				continue;
+			}
+
+			if(token->type == StartTag && !strcmp(token->tag_name, "p")){
+				node = CreateNodeElement(PARAGRAPH, token);
+				InsertNode(node);
+				PushNode(node);
+				current = node;
+				token = token->next;
+				continue;
+			}
+
+			if(token->type == StartTag && !strcmp(token->tag_name, "ul")){
+				node = CreateNodeElement(UL, token);
+				InsertNode(node);
+				PushNode(node);
+				current = node;
+				token = token->next;
+				continue;
+			}
+
+			if(token->type == StartTag && !strcmp(token->tag_name, "li")){
+				node = CreateNodeElement(LI, token);
+				InsertNode(node);
+				PushNode(node);
+				current = node;
+				token = token->next;
+				continue;
+			}
+			
 			if(token->type == EndTag && !strcmp(token->tag_name, "body")){
 				current = PopNode();
 				token = token->next;
@@ -200,6 +282,10 @@ void ConstructTree()
 		}
 	
 		case AFTER_BODY :{
+			if(IsIgnore(token)){
+				token = token->next;
+				continue;
+			}
 			mode = AFTER_AFTER_BODY;
 			continue;
 		}
@@ -208,15 +294,23 @@ void ConstructTree()
 			if(token->type == EndTag && !strcmp(token->tag_name, "html")){
 				current = PopNode();
 				token = token->next;
-				break;
+				goto END;
+			}
+			{//other
+				
+		 		goto END;
 			}
 		}
 	
-		default :
-	
-			break;
+		default ://not implemented yet, error
+			PrintToken();
+			PrintRecursive(root, 0);
+			goto END;
 		}
 	}
+
+END :
+	return;
 }
 
 static void PrintElement(char *name, int depth)

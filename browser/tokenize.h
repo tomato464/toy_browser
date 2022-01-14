@@ -22,6 +22,8 @@ extern Token *first_token, *current_token;
 
 void Tokenize(char *html);
 
+void PrintToken();
+
 void TestTokenize(char *html);
 
 #endif

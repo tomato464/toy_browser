@@ -329,6 +329,7 @@ int main(int argc, char *argv[])
 
 	char *html;
 	html = (char *) malloc(strlen(response));
+	memset(html, 0, sizeof(strlen(response)));
 	GetHtmlFromResponse(response, html);
 	free(request);
 	free(response);
@@ -336,8 +337,6 @@ int main(int argc, char *argv[])
 	free(parseurl.scheme);
 	free(parseurl.host);
 	free(parseurl.path);
-
-	printf("%s\n", html);
 
 	Render(html);
 
