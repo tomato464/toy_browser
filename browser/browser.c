@@ -1,5 +1,6 @@
 #include"../lib/lib.h"
 #include"tokenize.h"
+#include"parse.h"
 #include"render.h"
 #include<string.h>
 #include<stdio.h>
@@ -57,6 +58,22 @@ int ParseArgs(int argc, char *argv[])
 		}
 		if(!strncmp(argv[0], "--tokenize_test", 15)){
 			ret = 2;
+			raw_text = (char *) malloc(1000);
+			strcpy(raw_text, argv[1]);
+			argc -= 2;
+			argv += 2;
+			continue;	
+		}
+		if(!strncmp(argv[0], "--parse_test", 12)){
+			ret = 3;
+			raw_text = (char *) malloc(1000);
+			strcpy(raw_text, argv[1]);
+			argc -= 2;
+			argv += 2;
+			continue;	
+		}
+		if(!strncmp(argv[0], "--markdown_test", 15)){
+			ret = 4;
 			raw_text = (char *) malloc(1000);
 			strcpy(raw_text, argv[1]);
 			argc -= 2;
@@ -274,6 +291,26 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		TestTokenize(raw_text);
+		free(raw_text);
+		return 0;
+	}
+
+	if(n == 3){
+		if(!raw_text){
+			printf("for parse test you should put http text behind\n");
+			exit(1);
+		}
+		TestParse(raw_text);
+		free(raw_text);
+		return 0;
+	}
+
+	if(n == 4){
+		if(!raw_text){
+			printf("for parse test you should put http text behind\n");
+			exit(1);
+		}
+		Render(raw_text);
 		free(raw_text);
 		return 0;
 	}

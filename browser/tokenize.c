@@ -104,20 +104,17 @@ void PrintToken()
 	while(token){
 		switch(token->type){
 		case CHR :{
-			printf("Type : CHR  ");
-			printf("%c  ->\n", token->data);
+			printf("%c", token->data);
 			token = token->next;
 			break;
 		}
 		case StartTag :{
-			printf("Type : StartTag  ");
-			printf("<%s>  ->\n", token->tag_name);
+			printf("<%s>", token->tag_name);
 			token = token->next;
 			break;
 		}
 		case EndTag :{
-			printf("Type : End Tag   ");
-			printf("</%s>  ->\n", token->tag_name);
+			printf("</%s>", token->tag_name);
 			token = token->next;
 			break;
 		}
